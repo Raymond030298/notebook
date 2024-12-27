@@ -1,0 +1,84 @@
+print(“Hello Python!”)
+import folium
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+
+# Define climate data for each city##### 增加都市氣候資料 ########
+climate_data = {
+    "Kaohsiung": {
+        "high_temp": [23.9, 25.1, 26.8, 29.2, 30.8, 31.9, 32.4, 32.2, 31.5, 29.7, 27.2, 24.8],
+        "low_temp": [15.7, 16.8, 19.2, 22.1, 24.4, 25.6, 26.4, 26.2, 25.1, 22.9, 19.4, 16.4],
+        "precipitation": [16, 21, 39, 70, 197, 415, 410, 417, 242, 43, 19, 16]
+    },
+    "Chicago": {
+        "high_temp": [0, 2, 8, 15, 21, 27, 29, 28, 24, 17, 9, 2],
+        "low_temp": [-7, -5, 0, 5, 11, 17, 20, 19, 15, 8, 2, -5],
+        "precipitation": [42, 41, 61, 83, 94, 96, 95, 100, 85, 79, 66, 50]
+    }
+}
+
+# Define city coordinates
+city_coords = {
+    "Kaohsiung": [22.6273, 120.3014],
+    "Chicago": [41.8781, -87.6298]
+}
+
+# Function to generate climate graph
+def create_climate_graph(city_name, data):
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    high_temp = data["high_temp"]
+    low_temp = data["low_temp"]
+    precipitation = data["precipitation"]
+
+    # Plot the graph
+    fig, ax1 = plt.subplots(figsize=(6, 4))
+    ax1.plot(months, high_temp, label="High Temp (°C)", marker="o", linestyle="-", color="orange")
+    ax1.plot(months, low_temp, label="Low Temp (°C)", marker="o", linestyle="--")
+    ax1.set_xlabel("Month")
+    ax1.set_ylabel("Temperature (°C)", color="tab:orange")
+    ax1.tick_params(axis="y", labelcolor="tab:orange")
+
+    ax2 = ax1.twinx()
+    ax2.bar(months, precipitation, alpha=0.5, color="tab:green", label="Precipitation (mm)")
+    ax2.set_ylabel("Precipitation (mm)", color="tab:green")
+    ax2.tick_params(axis="y", labelcolor="tab:green")
+
+    plt.title(f"{city_name} Climate Data")
+    plt.legend()
+
+    # Save the graph to a PNG image in memory
+    buffer = BytesIO()
+    plt.savefig(buffer, format="png")
+    buffer.seek(0)
+    img_base64 = base64.b64encode(buffer.read()).decode()
+    buffer.close()
+    plt.close()
+
+    return f'<img src="data:image/png;base64,{img_base64}" width="400">'
+
+# Create the map
+map_center = [20, 0]  # General center point
+m = folium.Map(location=map_center, zoom_start=2)
+
+# Add markers with climate graphs
+tooltip = "Click to see the climate graph"
+for city, coords in city_coords.items():
+    climate_graph = create_climate_graph(city, climate_data[city])
+    popup_content = f"<strong>{city}</strong><br>{climate_graph}"
+    folium.Marker(
+        location=coords,
+        popup=folium.Popup(popup_content, max_width=450),
+        tooltip=tooltip
+    ).add_to(m)
+
+# Save or display the map #### 需要修改位置 ######
+
+
+
+
+
+
+
+
+m.save("C:/Users/USER/Desktop/QgisPy講義/互動地圖/世界都市氣候_互動地圖OKOK.html")
